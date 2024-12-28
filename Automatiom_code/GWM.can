@@ -1,0 +1,279 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+  message ABS_Msg_Data_CAN        CAN_ABS_Msg_Data_CAN;
+  message Ball_Game_Mode_CAN      CAN_Ball_Game_Mode_CAN; 
+  message RDS_Coder_Data_CAN      CAN_RDS_Coder_Data_CAN;
+  
+   msTimer Timer_ABS_Msg_Data_CAN ;
+   msTimer Timer_Ball_Game_Mode_CAN;
+   
+    const long Timer_value_ABS_Msg_Data_CAN=1500 ;
+    const long Timer_value_Ball_Game_Mode_CAN=50;
+}
+on start
+{
+  settimer(Timer_ABS_Msg_Data_CAN,Timer_value_ABS_Msg_Data_CAN);
+  settimer(Timer_Ball_Game_Mode_CAN,Timer_value_Ball_Game_Mode_CAN);
+}
+
+//START OF BALL_GAME_MODE_CAN:CODE
+on timer Timer_Ball_Game_Mode_CAN
+{
+  SendBall_Game_Mode_CAN();
+  settimer(Timer_Ball_Game_Mode_CAN,Timer_value_Ball_Game_Mode_CAN); 
+}
+ void SendBall_Game_Mode_CAN()
+{
+  byte Can_Mainswitch_value;
+  byte Can_Missswitch_value;
+  Can_Mainswitch_value=@Main_Switches::Sys_MainSwitch;
+  Can_Missswitch_value=@MissingSwitches::Sys_Miss_Ball_Game_Mode_CAN;
+  if(Can_Mainswitch_value==0&& Can_Missswitch_value==0)
+  {
+   output(CAN_Ball_Game_Mode_CAN);
+  }
+}
+on sysvar GWM::Sye_Actv_Live_1_Rq
+{
+  CAN_Ball_Game_Mode_CAN.Actv_Live_1_Rq=@GWM::Sye_Actv_Live_1_Rq;
+  
+}
+on sysvar GWM::Sye_Actv_Live_2_Rq
+{
+  CAN_Ball_Game_Mode_CAN.Actv_Live_2_Rq=@GWM::Sye_Actv_Live_2_Rq; 
+}
+
+on sysvar GWM::Sys_Preset_6_Bank_Rq
+{
+  CAN_Ball_Game_Mode_CAN.Preset_6_Bank_Rq=@GWM::Sys_Preset_6_Bank_Rq ;
+}
+on sysvar GWM::Sys_Preset_12_Bank_Rq
+{
+  byte Max_value;
+  Max_value=@GWM::Sys_Preset_12_Bank_Rq;
+  
+  if(Max_value<=0xF)
+  {
+  CAN_Ball_Game_Mode_CAN.Preset_12_Bank_Rq=@GWM::Sys_Preset_12_Bank_Rq ;
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_AM_Menu_Data_Rq
+{
+  byte Max_value;
+  Max_value=@GWM::Sys_AM_Menu_Data_Rq;
+  
+  if(Max_value<=0xFFFF)
+  {
+  CAN_Ball_Game_Mode_CAN.AM_Menu_Data_Rq=@GWM::Sys_AM_Menu_Data_Rq ;
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_FM_Menu_Data_Rq
+{
+  byte Max_value;
+  Max_value=@GWM::Sys_FM_Menu_Data_Rq;
+  
+  if(Max_value<=0xFF)
+  {
+  CAN_Ball_Game_Mode_CAN.FM_Menu_Data_Rq=@GWM::Sys_FM_Menu_Data_Rq ;
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar MissingSwitches::Sys_Miss_BCM_Msg_1_CAN
+{
+  if(@MissingSwitches::Sys_Miss_BCM_Msg_1_CAN==0x1)
+  {
+    cancelTimer(Timer_Ball_Game_Mode_CAN);
+  }
+  else 
+  {
+    settimer(Timer_Ball_Game_Mode_CAN,Timer_value_Ball_Game_Mode_CAN);
+  }
+}
+//END OF BALL_GAME_MODE_CAN:CODE)
+
+//STARTING/BEGGING ABS_MSG_DATA_CAN:CODE FOR EVEN PERIODIC
+
+on timer Timer_ABS_Msg_Data_CAN
+{
+  SendABS_Msg_Data_CAN();
+  settimer(Timer_ABS_Msg_Data_CAN,Timer_value_ABS_Msg_Data_CAN); 
+}
+ void SendABS_Msg_Data_CAN()
+{
+  byte Can_Mainswitch_value;
+  byte Can_Missswitch_value;
+  Can_Mainswitch_value=@Main_Switches::Sys_MainSwitch;
+  Can_Missswitch_value=@MissingSwitches::Sys_Miss_ABS_Msg_Data_CAN;
+  if(Can_Mainswitch_value==0&&Can_Missswitch_value==0)
+  {
+   output(CAN_ABS_Msg_Data_CAN);
+  }
+}
+on sysvar GWM::Sys_Indictr_Rgt_Dsply
+{
+ CAN_ABS_Msg_Data_CAN.Indictr_Rgt_Dsply=@GWM::Sys_Indictr_Rgt_Dsply;
+  SendABS_Msg_Data_CAN();
+}
+on sysvar GWM::Sys_Indictr_Lft_Dsply
+{
+  CAN_ABS_Msg_Data_CAN.Indictr_Lft_Dsply=@GWM::Sys_Indictr_Lft_Dsply;
+  SendABS_Msg_Data_CAN();                 //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+}
+
+on sysvar GWM::Sys_MID_Msg_Rq
+{
+  CAN_ABS_Msg_Data_CAN.MID_Msg_Rq=@GWM::Sys_MID_Msg_Rq;
+  SendABS_Msg_Data_CAN();               //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+}
+on sysvar GWM::Sys_MID_Data_Rq
+{
+  if(@ GWM::Sys_MID_Data_Rq<=0xFF)
+  {
+    CAN_ABS_Msg_Data_CAN.MID_Data_Rq=@GWM::Sys_MID_Data_Rq;
+    SendABS_Msg_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_HMI_MID_Sgnl_1_Rq
+{
+  if(@GWM::Sys_HMI_MID_Sgnl_1_Rq<=0xF)
+  {
+    CAN_ABS_Msg_Data_CAN.HMI_MID_Sgnl_1_Rq=@GWM::Sys_HMI_MID_Sgnl_1_Rq;
+    SendABS_Msg_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_HMI_MID_Sgnl_2_Rq
+{
+  if(@GWM::Sys_HMI_MID_Sgnl_2_Rq<=0xF)
+  {
+    CAN_ABS_Msg_Data_CAN.HMI_MID_Sgnl_2_Rq=@GWM::Sys_HMI_MID_Sgnl_2_Rq;
+    SendABS_Msg_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_HMI_MID_Sgnl_3_Rq
+{
+  if(@GWM::Sys_HMI_MID_Sgnl_3_Rq<=0xF)
+  {
+    CAN_ABS_Msg_Data_CAN.HMI_MID_Sgnl_3_Rq=@GWM::Sys_HMI_MID_Sgnl_3_Rq;
+    SendABS_Msg_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar MissingSwitches::Sys_Miss_ABS_Msg_Data_CAN
+{
+  if(@MissingSwitches::Sys_Miss_ABS_Msg_Data_CAN==0x1)
+  {
+    cancelTimer(Timer_ABS_Msg_Data_CAN);
+  }
+  else
+  {
+    setTimer(Timer_ABS_Msg_Data_CAN,Timer_value_ABS_Msg_Data_CAN);
+  }
+}
+//end of code for even periodic of ABS_MSG---)
+
+
+//starting of EVENT Message for RDS_CODER_DATA_CAN
+
+void sendRDS_Coder_Data_CAN ()
+{
+  byte can_Mainswitch_value;
+  can_Mainswitch_value=@Main_Switches::Sys_MainSwitch;
+  if(can_Mainswitch_value==0x0)
+  {
+    output(CAN_RDS_Coder_Data_CAN);
+  }
+}
+on sysvar GWM::Sys_TA_Data_Rq
+{
+ CAN_RDS_Coder_Data_CAN.TA_Data_Rq=@GWM::Sys_TA_Data_Rq;
+  SendRDS_Coder_Data_CAN();
+}
+on sysvar GWM::Sys_Ahb_Dsply
+{
+ CAN_RDS_Coder_Data_CAN.Ahb_Dsply=@GWM::Sys_Ahb_Dsply;
+  SendRDS_Coder_Data_CAN();
+}
+on sysvar GWM::Sys_TP_Data_Rq
+{ 
+  byte max_vale;
+  max_vale=@GWM::Sys_TP_Data_Rq;
+  if(max_vale<=0xF)
+  {
+   CAN_RDS_Coder_Data_CAN.TP_Data_Rq=@GWM::Sys_TP_Data_Rq;
+    SendRDS_Coder_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar GWM::Sys_Sig_Spdmtr_Rq
+{ 
+  byte max_vale;
+  max_vale=@GWM::Sys_Sig_Spdmtr_Rq;
+  if(max_vale<=0xF0)
+  {
+   CAN_RDS_Coder_Data_CAN.Sig_Spdmtr_Rq=@GWM::Sys_Sig_Spdmtr_Rq;
+    SendRDS_Coder_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+
+//MAIN SWITCHES(ON/OFF:CODE)
+on sysvar Main_Switches::Sys_MainSwitch
+{
+  if(@Main_Switches::Sys_MainSwitch==0x1)
+  {
+    cancelTimer(Timer_Ball_Game_Mode_CAN);
+    cancelTimer(Timer_ABS_Msg_Data_CAN);
+  }
+  else 
+  {
+    settimer(Timer_Ball_Game_Mode_CAN,Timer_value_Ball_Game_Mode_CAN);
+    settimer(Timer_ABS_Msg_Data_CAN,Timer_value_ABS_Msg_Data_CAN);
+  }
+}
+
+
+  
+  
+  
+  
+  
+  
+  

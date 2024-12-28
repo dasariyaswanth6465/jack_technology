@@ -1,0 +1,221 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+    message BCM_Msg_1_CAN           CAN_BCM_Msg_1_CAN;
+    message Drive_Asst_Data_CAN     CAN_Drive_Asst_Data_CAN;
+   
+    msTimer Timer_BCM_Msg_1_CAN;
+    msTimer Timer_Drive_Asst_Data_CAN;
+  
+    const long Timer_value_BCM_Msg_1_CAN=100;
+    const long Timer_value_Drive_Asst_Data_CAN=1000;
+}
+on start 
+{
+  settimer(Timer_BCM_Msg_1_CAN,Timer_value_BCM_Msg_1_CAN);
+  setTimer(Timer_Drive_Asst_Data_CAN,Timer_value_Drive_Asst_Data_CAN);
+}
+on timer Timer_BCM_Msg_1_CAN
+{
+  SendBCM_Msg_1_CAN();  
+  settimer(Timer_BCM_Msg_1_CAN,Timer_value_BCM_Msg_1_CAN);
+}
+  void sendBCM_Msg_1_CAN()
+  {
+  byte Can_Mainswitch_value;
+  byte Can_Missswitch_value;
+  Can_Mainswitch_value=@Main_Switches::Sys_MainSwitch;
+  Can_Missswitch_value=@MissingSwitches::Sys_Miss_BCM_Msg_1_CAN;
+  if(Can_Mainswitch_value==0&& Can_Missswitch_value==0)
+  {
+   output(CAN_BCM_Msg_1_CAN);
+  }
+}
+ on sysvar BCM::Sys_CRD_Msg_Txt_Rq_Dsply
+{
+  CAN_BCM_Msg_1_CAN.CRD_Msg_Txt_Rq_Dsply=@BCM::Sys_CRD_Msg_Txt_Rq_Dsply;
+  
+}
+on sysvar BCM::Sys_Ignition_Status
+{
+  CAN_BCM_Msg_1_CAN.Ignition_Status=@BCM::Sys_Ignition_Status; 
+}
+on sysvar BCM::Sys_CRD_Msg_Txt_Rq
+{
+  byte Max_value;
+  Max_value=@BCM::Sys_CRD_Msg_Txt_Rq;
+  
+  if(Max_value<=0xFFFF)
+  {
+  CAN_BCM_Msg_1_CAN.CRD_Msg_Txt_Rq=@BCM::Sys_CRD_Msg_Txt_Rq ;
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+
+//missing switch for bcm_msg_data message
+on sysvar MissingSwitches::Sys_Miss_BCM_Msg_1_CAN
+{
+  if(@MissingSwitches::Sys_Miss_BCM_Msg_1_CAN==0x1)
+  {
+    cancelTimer(Timer_BCM_Msg_1_CAN);
+  }
+  else
+  {
+    setTimer(Timer_BCM_Msg_1_CAN,Timer_value_BCM_Msg_1_CAN);
+  }
+}
+//end of code for fixed periodic message for BCM_msg_1_can
+
+//code starting for event periodic for Drive_asst_data_Can
+
+on timer Timer_Drive_Asst_Data_CAN
+{
+  SendDrive_Asst_Data_CAN();
+  settimer(Timer_Drive_Asst_Data_CAN,Timer_value_Drive_Asst_Data_CAN); 
+}
+ void SendDrive_Asst_Data_CAN()
+{
+  byte Can_Mainswitch_value;
+  byte Can_Missswitch_value;
+  Can_Mainswitch_value=@Main_Switches::Sys_MainSwitch;
+  Can_Missswitch_value=@MissingSwitches::Sys_Miss_Drive_Asst_Data_CAN;
+  if(Can_Mainswitch_value==0&&Can_Missswitch_value==0)
+  {
+   output(CAN_Drive_Asst_Data_CAN);
+  }
+}
+on sysvar BCM::Sys_Radio_Txt_1_Rq
+{
+  if(@BCM::Sys_Radio_Txt_1_Rq<=0xF)
+  {
+    CAN_Drive_Asst_Data_CAN.Radio_Txt_1_Rq=@BCM::Sys_Radio_Txt_1_Rq;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Radio_Txt_2_Rq
+{
+  if(@BCM::Sys_Radio_Txt_2_Rq<=0xF)
+  {
+    CAN_Drive_Asst_Data_CAN.Radio_Txt_2_Rq=@BCM::Sys_Radio_Txt_2_Rq;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Radio_Txt_3_Rq
+{
+  if(@BCM::Sys_Radio_Txt_3_Rq<=0xF)
+  {
+    CAN_Drive_Asst_Data_CAN.Radio_Txt_3_Rq=@BCM::Sys_Radio_Txt_3_Rq;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Artst_Name_1_Rq
+{
+  if(@BCM::Sys_Artst_Name_1_Rq<=0x7)
+  {
+    CAN_Drive_Asst_Data_CAN.Artst_Name_1_Rq=@BCM::Sys_Artst_Name_1_Rq;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Artst_Name_2_Rq
+{
+  if(@BCM::Sys_Artst_Name_2_Rq<=0x7)
+  {
+    CAN_Drive_Asst_Data_CAN.Artst_Name_2_Rq=@BCM::Sys_Artst_Name_2_Rq;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Menu_scrn_1_Data
+{
+  if(@BCM::Sys_Menu_scrn_1_Data<=0x3)
+  {
+    CAN_Drive_Asst_Data_CAN.Menu_scrn_1_Data=@BCM::Sys_Menu_scrn_1_Data;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Tuner_Scrn_1_Data
+{
+  if(@BCM::Sys_Tuner_Scrn_1_Data<=0xFF)
+  {
+    CAN_Drive_Asst_Data_CAN.Tuner_Scrn_1_Data=@BCM::Sys_Tuner_Scrn_1_Data;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar BCM::Sys_Tuner_Scrn_2_Data
+{
+  if(@BCM::Sys_Tuner_Scrn_2_Data<=0xFF)
+  {
+    CAN_Drive_Asst_Data_CAN.Tuner_Scrn_2_Data=@BCM::Sys_Tuner_Scrn_2_Data;
+    SendDrive_Asst_Data_CAN();             //FOR EVEN PERIODIC WE SHOULD USE "SEND" FUNCTION ON SYSVAR
+  }
+  else
+  {
+    openPanel("ERRORPOPUP");
+  }
+}
+on sysvar MissingSwitches::Sys_Miss_Drive_Asst_Data_CAN
+{
+  if(@MissingSwitches::Sys_Miss_Drive_Asst_Data_CAN==0x1)
+  {
+    cancelTimer(Timer_Drive_Asst_Data_CAN);
+  }
+  else
+  {
+    setTimer(Timer_Drive_Asst_Data_CAN,Timer_value_Drive_Asst_Data_CAN);
+  }
+}
+
+//code ends for Driver_asst_data_can
+
+
+
+//MAIN SWITCHES(ON/OFF:CODE)
+on sysvar Main_Switches::Sys_MainSwitch
+{
+  if(@Main_Switches::Sys_MainSwitch==0x1)
+  {
+    cancelTimer(Timer_BCM_Msg_1_CAN);
+    cancelTimer(Timer_Drive_Asst_Data_CAN);
+  }
+  else 
+  {
+    settimer(Timer_BCM_Msg_1_CAN,Timer_value_BCM_Msg_1_CAN);
+    settimer(Timer_Drive_Asst_Data_CAN,Timer_value_BCM_Msg_1_CAN);
+  }
+}
+
